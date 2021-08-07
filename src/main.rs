@@ -1,3 +1,5 @@
+use std::{env, fs::File, io::Read};
+
 use exercise_rendering::{
     css,
     dom::{Node, NodeType},
@@ -7,6 +9,7 @@ use exercise_rendering::{
     style::to_styled_node,
 };
 
+/*
 const HTML: &str = r#"<body>
     <p>hello</p>
     <p class="inline">world</p>
@@ -21,6 +24,7 @@ const HTML: &str = r#"<body>
         }
     </style>
 </body>"#;
+*/
 
 const DEFAULT_STYLESHEET: &str = r#"
 script, style {
@@ -47,10 +51,31 @@ pub fn collect_tag_inners(node: &Box<Node>, tag_name: &str) -> Vec<String> {
         .collect()
 }
 
+pub fn read_html_file(filename: &str) -> String {
+    let mut f = File::open(filename).expect("File not found");
+    let mut contents = String::new();
+
+    f
+        .read_to_string(&mut contents)
+        .expect("Failed to read the file");
+
+    return contents
+}
+
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    
+    if args.len() != 2 {
+        println!("Usage  : {} <html-file-name>", args[0]);
+        println!("Example: {} index.html", args[0]);
+        return
+    }
+
+    let html = read_html_file(&args[1]);
+
     let mut siv = cursive::default();
 
-    let node = html::parse(HTML);
+    let node = html::parse(&html);
     let stylesheet = css::parse(&format!(
         "{}\n{}",
         DEFAULT_STYLESHEET,
